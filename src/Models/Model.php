@@ -31,6 +31,8 @@ class Model implements BlueprintModel
 
     private array $polymorphicManyToManyTables = [];
 
+    private array $casts = [];
+
     private array $indexes = [];
 
     public function __construct($name)
@@ -90,6 +92,12 @@ class Model implements BlueprintModel
     {
         return $this->relationships;
     }
+
+    public function casts(): array
+    {
+        return $this->casts;
+    }
+
 
     public function primaryKey(): string
     {
@@ -240,6 +248,11 @@ class Model implements BlueprintModel
         $segments = [$this->name(), class_basename($reference)];
         sort($segments);
         $this->pivotTables[] = $segments;
+    }
+
+    public function addCast(string $field, string $cast): void
+    {
+        $this->casts[$field] = $cast;
     }
 
     public function indexes(): array

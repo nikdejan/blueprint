@@ -194,6 +194,16 @@ class ModelLexer implements Lexer
             unset($columns['relationships']);
         }
 
+        if (isset($columns['casts'])) {
+            if (is_array($columns['casts'])) {
+                foreach ($columns['casts'] as $field => $cast) {
+                    $model->addCast($field, $cast);
+                }
+            }
+
+            unset($columns['casts']);
+        }
+
         if (isset($columns['indexes'])) {
             foreach ($columns['indexes'] as $index) {
                 $model->addIndex(new Index(key($index), array_map('trim', explode(',', current($index)))));

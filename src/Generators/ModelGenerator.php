@@ -214,6 +214,11 @@ class ModelGenerator extends AbstractClassGenerator implements Generator
         }
 
         $columns = $this->castableColumns($model->columns());
+
+        foreach($model->casts() as $field => $cast) {
+            $columns[$field] = "App\Enums\\$cast";
+        }
+
         if (!empty($columns)) {
             $properties[] = str_replace('[]', $this->pretty_print_array($columns, indent: 8), $this->filesystem->stub('model.casts.stub'));
         }
