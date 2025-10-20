@@ -119,6 +119,11 @@ class Model implements BlueprintModel
         return $this->usesPrimaryKey() && $this->columns[$this->primaryKey]->dataType() === 'uuid';
     }
 
+    public function usesBlameable(): bool
+    {
+        return $this->hasColumn('created_by') || $this->hasColumn('updated_by');
+    }
+
     public function idType(): ?string
     {
         if (!$this->usesPrimaryKey()) {
