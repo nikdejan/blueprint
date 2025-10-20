@@ -347,7 +347,13 @@ class ModelGenerator extends AbstractClassGenerator implements Generator
                         if ($key === 'id') {
                             $key = null;
                         }
-                        $method_name = $is_model_fqn ? Str::lower(Str::afterLast($class, '\\')) : Str::lower($class);
+
+                        if($type === 'belongsTo' & $key !== null) {
+                            if(Str::endsWith($column_name, '_' . $key))
+                                $method_name = Str::beforeLast($column_name, '_' . $key);
+                        } else
+                            $method_name = $is_model_fqn ? Str::lower(Str::afterLast($class, '\\')) : Str::lower($class);
+
                     } else {
                         $class = $foreign_reference;
                     }
@@ -463,6 +469,11 @@ class ModelGenerator extends AbstractClassGenerator implements Generator
         if ($model->usesUuids()) {
             $this->addImport($model, 'Illuminate\\Database\\Eloquent\\Concerns\\HasUuids');
             $traits[] = 'HasUuids';
+        }
+
+        if ($model->usesBlameable()) {
+            $this->addImport($model, 'App\\Models\Concerns\\Blameable');
+            $traits[] = 'Blameable';
         }
 
         sort($traits);
