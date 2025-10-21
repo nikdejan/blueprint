@@ -474,19 +474,20 @@ class MigrationGenerator extends AbstractClassGenerator implements Generator
 
     protected function createMigrations(array $tables, $overwrite = false): array
     {
-        $sequential_timestamp = \Carbon\Carbon::now()->copy()->subSeconds(
-            collect($tables['tableNames'])->merge($tables['pivotTableNames'])->merge($tables['polymorphicManyToManyTables'])->count()
-        );
+        // Use fixed base date (0001-01-01) like Laravel's default migrations
+        // Start from a configurable sequence number (default: 4, after users/cache/jobs/extensions)
+        $sequenceStart = config('blueprint.migration_sequence_start', 4);
+        $currentSequence = $sequenceStart;
 
         foreach ($tables['tableNames'] as $tableName => $data) {
-            $path = $this->getTablePath($tableName, $sequential_timestamp->addSecond(), $overwrite);
+            $path = $this->getTablePath($tableName, $currentSequence++, $overwrite);
             $action = $this->filesystem->exists($path) ? 'updated' : 'created';
             $this->filesystem->put($path, $data);
             $this->output[$action][] = $path;
         }
 
         foreach ($tables['pivotTableNames'] as $tableName => $data) {
-            $path = $this->getTablePath($tableName, $sequential_timestamp->addSecond(), $overwrite);
+            $path = $this->getTablePath($tableName, $currentSequence++, $overwrite);
             $action = $this->filesystem->exists($path) ? 'updated' : 'created';
             $this->filesystem->put($path, $data);
 
@@ -494,7 +495,7 @@ class MigrationGenerator extends AbstractClassGenerator implements Generator
         }
 
         foreach ($tables['polymorphicManyToManyTables'] as $tableName => $data) {
-            $path = $this->getTablePath($tableName, $sequential_timestamp->addSecond(), $overwrite);
+            $path = $this->getTablePath($tableName, $currentSequence++, $overwrite);
             $action = $this->filesystem->exists($path) ? 'updated' : 'created';
             $this->filesystem->put($path, $data);
             $this->output[$action][] = $path;
@@ -503,7 +504,7 @@ class MigrationGenerator extends AbstractClassGenerator implements Generator
         return $this->output;
     }
 
-    protected function getTablePath($tableName, Carbon $timestamp, $overwrite = false)
+    protected function getTablePath($tableName, int $sequence, $overwrite = false)
     {
         $dir = 'database/migrations/';
         $name = '_create_' . $tableName . '_table.php';
@@ -527,7 +528,11 @@ class MigrationGenerator extends AbstractClassGenerator implements Generator
             }
         }
 
-        return $dir . $timestamp->format('Y_m_d_His') . $name;
+        // Format: 0001_01_01_000004, 0001_01_01_000005, etc.
+        // Using fixed date (0001-01-01) like Laravel's default migrations
+        $timestamp = sprintf('0001_01_01_%06d', $sequence);
+
+        return $dir . $timestamp . $name;
     }
 
     protected function getClassName(Model $model): string
