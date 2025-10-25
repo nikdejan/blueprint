@@ -505,7 +505,7 @@ class MigrationGenerator extends AbstractClassGenerator implements Generator
 
     protected function getTablePath($tableName, Carbon $timestamp, $overwrite = false)
     {
-        $dir = 'database/migrations/';
+        $dir = 'database/migrations/generated';
         $name = '_create_' . $tableName . '_table.php';
 
         if ($overwrite) {
